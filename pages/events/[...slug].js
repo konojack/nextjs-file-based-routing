@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import EventList from '../../components/events/EventList';
 import { getFilteredEvents } from '../../data/dummy-data';
 
 export default function EventSlugPage() {
@@ -32,5 +33,9 @@ export default function EventSlugPage() {
   if (!filterData || filteredEvents.length === 0) {
     return <p>No events found for the chosen filter</p>;
   }
-  return <div>EventSlug Page</div>;
+  return (
+    <div>
+      <EventList events={filteredEvents} />
+    </div>
+  );
 }
