@@ -1,32 +1,57 @@
-import { useRouter } from 'next/router';
+import fs from 'fs/promises';
+import path from 'path';
 import EventList from '../../components/events/EventList';
 import ResultsTitle from '../../components/events/ResultsTitle';
 import Button from '../../components/ui/button';
 import ErrorAlert from '../../components/ui/error-alert';
-import { getFilteredEvents } from '../../data/dummy-data';
+import { getFilteredEvents, getAllEvents } from '../../utils/eventsUtil';
 
-export default function EventSlugPage() {
-  const router = useRouter();
+export async function getStaticProps(context) {
+  const filePath = path.join(process.cwd(), 'data', 'events.json');
+  const fileContent = await fs.readFile(filePath);
+  const data = JSON.parse(fileContent);
 
-  const filterData = router.query.slug;
+  const allEvents = getAllEvents(data.products);
 
-  if (!filterData) {
+  const filters = context.params.slug;
+
+  const year = +filters[0];
+  const month = +filters[1];
+
+  const filteredEvents = getFilteredEvents(allEvents, {
+    year: year,
+    month: month,
+  });
+
+  console.log(filteredEvents);
+  return {
+    props: {
+      filteredEvents,
+      year,
+      month,
+    },
+  };
+}
+
+export async function getStaticPaths() {
+  return {
+    paths: [{ params: { slug: ['2021', '05'] } }],
+    fallback: true,
+  };
+}
+
+export default function EventSlugPage({ filteredEvents, year, month }) {
+  if (!filteredEvents) {
     return <p className="center">Loading...</p>;
   }
 
-  const filteredYear = filterData[0];
-  const filteredMonth = filterData[1];
-
-  const numYear = +filteredYear;
-  const numMonth = +filteredMonth;
-
   if (
-    isNaN(numYear) ||
-    isNaN(numMonth) ||
-    numYear > 2022 ||
-    numYear < 2021 ||
-    numMonth < 1 ||
-    numMonth > 12
+    isNaN(year) ||
+    isNaN(month) ||
+    year > 2022 ||
+    year < 2021 ||
+    month < 1 ||
+    month > 12
   ) {
     return (
       <>
@@ -42,9 +67,7 @@ export default function EventSlugPage() {
     );
   }
 
-  const filteredEvents = getFilteredEvents({ year: numYear, month: numMonth });
-
-  if (!filterData || filteredEvents.length === 0) {
+  if (filteredEvents.length === 0) {
     return (
       <>
         <ErrorAlert>
@@ -58,7 +81,7 @@ export default function EventSlugPage() {
   }
   return (
     <div>
-      <ResultsTitle date={new Date(numYear, numMonth - 1)} />
+      <ResultsTitle date={new Date(year, month - 1)} />
       <EventList events={filteredEvents} />
     </div>
   );
