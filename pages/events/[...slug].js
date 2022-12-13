@@ -1,5 +1,3 @@
-import fs from 'fs/promises';
-import path from 'path';
 import EventList from '../../components/events/EventList';
 import ResultsTitle from '../../components/events/ResultsTitle';
 import Button from '../../components/ui/button';
@@ -7,18 +5,12 @@ import ErrorAlert from '../../components/ui/error-alert';
 import { getFilteredEvents, getAllEvents } from '../../utils/eventsUtil';
 
 export async function getStaticProps(context) {
-  const filePath = path.join(process.cwd(), 'data', 'events.json');
-  const fileContent = await fs.readFile(filePath);
-  const data = JSON.parse(fileContent);
-
-  const allEvents = getAllEvents(data.products);
-
   const filters = context.params.slug;
 
   const year = +filters[0];
   const month = +filters[1];
 
-  const filteredEvents = getFilteredEvents(allEvents, {
+  const filteredEvents = await getFilteredEvents({
     year: year,
     month: month,
   });

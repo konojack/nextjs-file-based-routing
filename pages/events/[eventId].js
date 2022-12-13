@@ -1,33 +1,25 @@
-import fs from 'fs/promises';
-import path from 'path';
 import EventContent from '../../components/event-detail/EventContent';
 import EventLogistics from '../../components/event-detail/EventLogistics';
 import EventSummary from '../../components/event-detail/EventSummary';
-import { getEventById } from '../../utils/eventsUtil';
+import { getEventById, getFeaturedEvents } from '../../utils/eventsUtil';
 
 export async function getStaticPaths() {
-  const filePath = path.join(process.cwd(), 'data', 'events.json');
-  const fileContent = await fs.readFile(filePath);
-  const data = JSON.parse(fileContent);
+  const events = await getFeaturedEvents();
 
-  const allIds = data.products.map(product => ({
-    params: { eventId: product.id },
+  const featuredEventsIds = events.map(event => ({
+    params: { eventId: event.id },
   }));
 
   return {
-    paths: allIds,
+    paths: featuredEventsIds,
     fallback: true,
   };
 }
 
 export async function getStaticProps(context) {
-  const filePath = path.join(process.cwd(), 'data', 'events.json');
-  const fileContent = await fs.readFile(filePath);
-  const data = JSON.parse(fileContent);
-
   const eventId = context.params.eventId;
 
-  const event = getEventById(data.products, eventId);
+  const event = await getEventById(eventId);
 
   if (!event) {
     return {
@@ -39,12 +31,17 @@ export async function getStaticProps(context) {
     props: {
       event,
     },
+    revalidate: 30,
   };
 }
 
 export default function EventIdPage({ event }) {
   if (!event) {
-    return <p>No event found!</p>;
+    return (
+      <div className="center">
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   return (
