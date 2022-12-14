@@ -2,13 +2,28 @@ import EventList from '../../components/events/EventList';
 import ResultsTitle from '../../components/events/ResultsTitle';
 import Button from '../../components/ui/button';
 import ErrorAlert from '../../components/ui/error-alert';
-import { getFilteredEvents, getAllEvents } from '../../utils/eventsUtil';
+import { getFilteredEvents } from '../../utils/eventsUtil';
 
-export async function getStaticProps(context) {
+export async function getServerSideProps(context) {
   const filters = context.params.slug;
 
   const year = +filters[0];
   const month = +filters[1];
+
+  if (
+    isNaN(year) ||
+    isNaN(month) ||
+    year > 2022 ||
+    year < 2021 ||
+    month < 1 ||
+    month > 12
+  ) {
+    return {
+      props: {
+        hasError: true,
+      },
+    };
+  }
 
   const filteredEvents = await getFilteredEvents({
     year: year,
@@ -19,32 +34,20 @@ export async function getStaticProps(context) {
   return {
     props: {
       filteredEvents,
-      year,
-      month,
+      date: {
+        year,
+        month,
+      },
     },
   };
 }
 
-export async function getStaticPaths() {
-  return {
-    paths: [{ params: { slug: ['2021', '05'] } }],
-    fallback: true,
-  };
-}
-
-export default function EventSlugPage({ filteredEvents, year, month }) {
-  if (!filteredEvents) {
-    return <p className="center">Loading...</p>;
-  }
-
-  if (
-    isNaN(year) ||
-    isNaN(month) ||
-    year > 2022 ||
-    year < 2021 ||
-    month < 1 ||
-    month > 12
-  ) {
+export default function EventSlugPage({
+  filteredEvents,
+  date: { year, month },
+  hasError,
+}) {
+  if (hasError) {
     return (
       <>
         <div className="center">
