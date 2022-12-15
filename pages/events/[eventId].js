@@ -1,6 +1,7 @@
 import EventContent from '../../components/event-detail/EventContent';
 import EventLogistics from '../../components/event-detail/EventLogistics';
 import EventSummary from '../../components/event-detail/EventSummary';
+import Comments from '../../components/input/comments';
 import { getEventById, getFeaturedEvents } from '../../utils/eventsUtil';
 
 export async function getStaticPaths() {
@@ -51,6 +52,7 @@ export default function EventIdPage({ event }) {
       <EventContent>
         <p>{event.description}</p>
       </EventContent>
+      <Comments eventId={event.id} />
     </>
   );
 }
