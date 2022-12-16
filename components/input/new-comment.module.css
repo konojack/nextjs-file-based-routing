@@ -37,6 +37,7 @@
   background-color: #dcfff9;
 }
 
-.form button {
+.form button,
+.form button.submit {
   background-color: white;
 }
