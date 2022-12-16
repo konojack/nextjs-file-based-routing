@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import CommentList from './comment-list';
 import NewComment from './new-comment';
@@ -8,15 +8,19 @@ function Comments({ eventId }) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
 
+  const getComments = useCallback(() => {
+    fetch(`/api/comments/${eventId}`)
+      .then(resp => resp.json())
+      .then(resp => {
+        setComments(resp.comments);
+      });
+  }, [eventId]);
+
   useEffect(() => {
     if (showComments) {
-      fetch(`/api/comments/${eventId}`)
-        .then(resp => resp.json())
-        .then(resp => {
-          setComments(resp.comments);
-        });
+      getComments();
     }
-  }, [showComments, eventId]);
+  }, [showComments, eventId, getComments]);
 
   function toggleCommentsHandler() {
     setShowComments(prevStatus => !prevStatus);
@@ -31,7 +35,7 @@ function Comments({ eventId }) {
       },
     })
       .then(resp => resp.json())
-      .then(resp => console.log(resp));
+      .then(resp => getComments());
   }
 
   return (
