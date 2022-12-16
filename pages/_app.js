@@ -4,7 +4,7 @@ import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <>
+    <Layout>
       <Head>
         <title>Events App</title>
         <meta
@@ -12,10 +12,8 @@ function MyApp({ Component, pageProps }) {
           content="This is an event app! Browse your event!"
         />
       </Head>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
-    </>
+      <Component {...pageProps} />
+    </Layout>
   );
 }
 
