@@ -16,8 +16,14 @@ const handler = (req, res) => {
     }
 
     const data = req.body;
-    res.status(200).json({ eventId, ...data, success: true });
+    return res.status(200).json({ eventId, ...data, success: true });
   } else if (req.method == 'GET') {
+    const dummyList = [
+      { id: 'c1', name: 'Dawid', text: 'A first comment' },
+      { id: 'c2', name: 'Natalia', text: 'A second comment' },
+    ];
+
+    return res.status(200).json({ comments: dummyList });
   }
 };
 

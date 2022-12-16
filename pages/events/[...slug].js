@@ -30,7 +30,6 @@ export async function getServerSideProps(context) {
     month: month,
   });
 
-  console.log(filteredEvents);
   return {
     props: {
       filteredEvents,
