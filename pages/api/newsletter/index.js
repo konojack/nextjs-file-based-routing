@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { MongoClient } from 'mongodb';
+import { connectDatabase, insertDocument } from '../../../utils/dbUtil';
 
 const schema = Joi.object({
   email: Joi.string().email().required(),
@@ -14,12 +15,20 @@ const handler = async (req, res) => {
     }
 
     const email = req.body.email;
+    let client;
 
-    const client = await MongoClient.connect(process.env.MONGODB_URL);
-    const db = client.db();
-    await db.collection('newsletter').insertOne({ email: email });
+    try {
+      client = await connectDatabase();
+    } catch (err) {
+      return res.status(500).json({ message: 'Connecting to DB failed!' });
+    }
 
-    client.close();
+    try {
+      await insertDocument(client, 'newsletter', { email: email });
+      client.close();
+    } catch (err) {
+      return res.status(500).json({ message: 'Inserting data failed!' });
+    }
 
     res.status(201).json({ success: true, email });
   }

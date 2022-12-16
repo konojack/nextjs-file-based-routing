@@ -1,5 +1,9 @@
 import Joi from 'joi';
-import { MongoClient } from 'mongodb';
+import {
+  connectDatabase,
+  getAllDocuments,
+  insertDocument,
+} from '../../../utils/dbUtil';
 
 const schema = Joi.object({
   email: Joi.string().email().required(),
@@ -10,7 +14,12 @@ const schema = Joi.object({
 const handler = async (req, res) => {
   const { eventId } = req.query;
 
-  const client = await MongoClient.connect(process.env.MONGODB_URL);
+  let client;
+  try {
+    client = await connectDatabase();
+  } catch (err) {
+    return res.status(500).json({ message: 'Connecting to DB failed!' });
+  }
 
   if (req.method == 'POST') {
     const { error } = schema.validate(req.body);
@@ -27,19 +36,30 @@ const handler = async (req, res) => {
       eventId,
     };
 
-    const db = client.db();
-    const result = await db.collection('comments').insertOne(newComment);
-
-    return res
-      .status(201)
-      .json({ eventId, ...newComment, id: result.insertedId, success: true });
+    let result;
+    try {
+      result = await insertDocument(client, 'comments', newComment);
+      return res.status(201).json({
+        eventId,
+        ...newComment,
+        _id: result.insertedId,
+        success: true,
+      });
+    } catch (err) {
+      return res.status(500).json({ message: 'Inserting data failed!' });
+    }
   } else if (req.method == 'GET') {
-    const db = client.db();
-    const documents = await db
-      .collection('comments')
-      .find({ eventId: eventId })
-      .sort({ _id: -1 })
-      .toArray();
+    let documents;
+    try {
+      documents = await getAllDocuments(
+        client,
+        'comments',
+        { _id: -1 },
+        { eventId: eventId }
+      );
+    } catch (err) {
+      return res.status(500).json({ message: 'Getting comments failed!' });
+    }
 
     res.status(200).json({ comments: documents });
   }
