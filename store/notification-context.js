@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useState } from 'react';
 
 export const NotificationContext = createContext({
   notification: null,
@@ -7,7 +7,25 @@ export const NotificationContext = createContext({
 });
 
 export const NotificationContextProvider = ({ children }) => {
+  const [activeNotification, setActiveNotification] = useState();
+
+  const showNotificationHandler = notificationData => {
+    setActiveNotification(notificationData);
+  };
+
+  const hideNotificationHandler = () => {
+    setActiveNotification(null);
+  };
+
+  const context = {
+    notification: activeNotification,
+    showNotification: showNotificationHandler,
+    hideNotification: hideNotificationHandler,
+  };
+
   return (
-    <NotificationContext.Provider value={}>{children}</NotificationContext.Provider>
+    <NotificationContext.Provider value={context}>
+      {children}
+    </NotificationContext.Provider>
   );
 };
