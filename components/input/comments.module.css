@@ -15,6 +15,11 @@
   cursor: pointer;
 }
 
+.spinner {
+  width: 100%;
+  margin-top: 1rem;
+}
+
 .comments button:hover,
 .comments button:active {
   background-color: #dcfff9;
