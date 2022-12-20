@@ -1,3 +1,5 @@
+import { useContext } from 'react';
+import { NotificationContext } from '../../store/notification-context';
 import classes from './newsletter-registration.module.css';
 
 const validateEmail = email => {
@@ -9,6 +11,8 @@ const validateEmail = email => {
 };
 
 function NewsletterRegistration() {
+  const notificationCtx = useContext(NotificationContext);
+
   function registrationHandler(event) {
     event.preventDefault();
 
@@ -16,6 +20,12 @@ function NewsletterRegistration() {
     const dataToSend = { email };
 
     if (validateEmail(email)) {
+      notificationCtx.showNotification({
+        title: 'Sending...',
+        message: 'Your e-mail is saving',
+        status: 'pending',
+      });
+
       fetch('/api/newsletter', {
         method: 'POST',
         body: JSON.stringify(dataToSend),
@@ -23,8 +33,29 @@ function NewsletterRegistration() {
           'Content-Type': 'application/json',
         },
       })
-        .then(resp => resp.json())
-        .then(resp => console.log(resp));
+        .then(resp => {
+          if (resp.ok) {
+            return resp.json();
+          }
+
+          return resp.json().then(resp => {
+            throw new Error(resp.message || 'Something went wrong!');
+          });
+        })
+        .then(resp => {
+          notificationCtx.showNotification({
+            title: 'Success!',
+            message: 'Your e-mail has been saved',
+            status: 'success',
+          });
+        })
+        .catch(error => {
+          notificationCtx.showNotification({
+            title: 'Error!',
+            message: error.message || 'Something went wrong!',
+            status: 'error',
+          });
+        });
     }
   }
 

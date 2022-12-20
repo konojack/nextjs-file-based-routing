@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { MongoClient } from 'mongodb';
 import { connectDatabase, insertDocument } from '../../../utils/dbUtil';
 
 const schema = Joi.object({
